@@ -1,27 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using Android.App;
-using Android.Content;
-using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
-using Android.Support.V7.Widget.Helper;
-using Android.Support.V7.Widget;
-
-namespace ShoppingHelper
+﻿namespace ShoppingHelper
 {
+    using Android.Support.V7.Widget;
+    using Android.Support.V7.Widget.Helper;
+
     public class ShoppingListItemTouchHelperCallback : ItemTouchHelper.Callback
     {
+        #region Fields
+
         private IItemTouchHelperAdapter _itemTouchHelperAdapter;
+
+        #endregion
+
+        #region Constructors and Destructors
 
         public ShoppingListItemTouchHelperCallback(IItemTouchHelperAdapter itemTouchHelperAdaptter)
         {
             _itemTouchHelperAdapter = itemTouchHelperAdaptter;
         }
+
+        #endregion
+
+        #region Public Properties
+
+        public override bool IsItemViewSwipeEnabled => true;
+
+        public override bool IsLongPressDragEnabled => false;
+
+        #endregion
+
+        #region Public Methods and Operators
 
         public override int GetMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder)
         {
@@ -32,8 +39,9 @@ namespace ShoppingHelper
 
         public override bool OnMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target)
         {
-            _itemTouchHelperAdapter.OnItemMove(viewHolder.AdapterPosition,
-           target.AdapterPosition);
+            _itemTouchHelperAdapter.OnItemMove(
+                viewHolder.AdapterPosition,
+                target.AdapterPosition);
             return true;
         }
 
@@ -42,8 +50,6 @@ namespace ShoppingHelper
             _itemTouchHelperAdapter.OnItemDismiss(viewHolder.AdapterPosition);
         }
 
-        public override bool IsItemViewSwipeEnabled => true;
-
-        public override bool IsLongPressDragEnabled => false;
+        #endregion
     }
 }

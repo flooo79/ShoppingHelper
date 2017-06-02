@@ -1,27 +1,49 @@
-﻿using Android.Support.V7.Widget;
-using Android.Views;
-using System;
-using System.Collections.Generic;
-
-namespace ShoppingHelper
+﻿namespace ShoppingHelper
 {
-    public class ShoppingListAdapter: RecyclerView.Adapter
+    using System;
+    using System.Collections.Generic;
+
+    using Android.Support.V7.Widget;
+    using Android.Views;
+
+    using ShoppingHelper.Model;
+
+    public class ShoppingListAdapter : RecyclerView.Adapter
     {
+        #region Fields
+
         private List<ShoppingList> _shoppingLists;
-        public event EventHandler<int> ItemClick;
-            
+
+        #endregion
+
+        #region Constructors and Destructors
+
         public ShoppingListAdapter(List<ShoppingList> shoppingLists)
         {
             _shoppingLists = shoppingLists;
         }
 
-        public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
-        {
-            View view = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.ShoppingListRowView, parent, false);
+        #endregion
 
-            ShoppingListViewHolder viewHolder = new ShoppingListViewHolder(view, OnClick);            
-            return viewHolder;
+        #region Public Events
+
+        public event EventHandler<int> ItemClick;
+
+        #endregion
+
+        #region Public Properties
+
+        public override int ItemCount
+        {
+            get
+            {
+                return _shoppingLists.Count;
+            }
         }
+
+        #endregion
+
+        #region Public Methods and Operators
 
         public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
         {
@@ -31,14 +53,23 @@ namespace ShoppingHelper
             viewHolder.ItemCount.Text = string.Format("({0:N0})", _shoppingLists[position].Count);
         }
 
-        public override int ItemCount
+        public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
         {
-            get { return _shoppingLists.Count; }
+            View view = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.ShoppingListRowView, parent, false);
+
+            ShoppingListViewHolder viewHolder = new ShoppingListViewHolder(view, OnClick);
+            return viewHolder;
         }
+
+        #endregion
+
+        #region Methods
 
         private void OnClick(int position)
         {
             ItemClick?.Invoke(this, position);
         }
+
+        #endregion
     }
 }

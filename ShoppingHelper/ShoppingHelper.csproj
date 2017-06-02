@@ -191,7 +191,7 @@
     <AndroidResource Include="Resources\menu\EditShoppingListTopMenu.xml" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="Resources\layout\AddProduct.xml" />
+    <AndroidResource Include="Resources\layout\AddProduct.axml" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\menu\StartShoppingTopMenu.xml" />

@@ -1,29 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using Android.App;
-using Android.Content;
-using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
-using Android.Support.V7.Widget;
-
-namespace ShoppingHelper
+﻿namespace ShoppingHelper
 {
+    using System;
+
+    using Android.Support.V7.Widget;
+    using Android.Views;
+    using Android.Widget;
+
     public class ShoppingListViewHolder : RecyclerView.ViewHolder
     {
-        public TextView ShoppingListName { get; private set; }
-        public TextView ItemCount { get; private set; }
+        #region Constructors and Destructors
 
-        public ShoppingListViewHolder(View itemView, Action<int> listener) : base (itemView)
-    {
+        public ShoppingListViewHolder(View itemView, Action<int> listener)
+            : base(itemView)
+        {
             ShoppingListName = itemView.FindViewById<TextView>(Resource.Id.ShoppingListRowViewDescriptionTextView);
             ItemCount = itemView.FindViewById<TextView>(Resource.Id.ShoppingListRowViewCountTextView);
-            
+
             itemView.Click += (sender, e) => listener(AdapterPosition);
-        }   
+        }
+
+        #endregion
+
+        #region Public Properties
+
+        public TextView ItemCount { get; private set; }
+
+        public TextView ShoppingListName { get; private set; }
+
+        #endregion
     }
 }

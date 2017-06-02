@@ -3,8 +3,6 @@
     <string name="ApplicationName">ShoppingHelper</string>
     <string name="ShoppingLists">Einkaufslisten</string>
     <string name="ShoppingListName">Name der Einkaufsliste</string>
-    <string name="NewShoppingList">Neue Einkaufsliste</string>
-    <string name="NewProduct">Neuer Artikel</string>
     <string name="New">Abbrechen</string>
     <string name="Edit">Bearbeiten</string>
     <string name="Products">Artikel</string>

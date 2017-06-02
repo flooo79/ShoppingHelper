@@ -2,8 +2,6 @@
 <resources>
     <string name="ApplicationName">ShoppingHelper</string>
     <string name="ShoppingLists">Shopping lists</string>
-    <string name="NewShoppingList">New shopping list</string>
-    <string name="NewProduct">New product</string>
     <string name="ShoppingListName">Shopping list name</string>
     <string name="New">New</string>
     <string name="Edit">Edit</string>

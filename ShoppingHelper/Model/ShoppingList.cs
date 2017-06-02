@@ -1,40 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using Android.App;
-using Android.Content;
-using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
-
-using SQLite;
-using ShoppingHelper.Model;
-using SQLite.Net.Attributes;
-using SQLiteNetExtensions.Attributes;
-
-namespace ShoppingHelper
+﻿namespace ShoppingHelper.Model
 {
+    using System;
+    using System.Collections.Generic;
+
+    using SQLite.Net.Attributes;
+
+    using SQLiteNetExtensions.Attributes;
 
     [Table("ShoppingList")]
     public class ShoppingList : IdDescriptionModel
     {
+        #region Constructors and Destructors
+
         public ShoppingList()
         {
             Products = new List<Product>();
         }
 
-        [ManyToMany(typeof(ShoppingListProduct), CascadeOperations = CascadeOperation.All)]
-        public List<Product> Products { get; set; }
+        #endregion
+
+        #region Public Properties
 
         [Column("Count")]
         public int Count { get; set; } = 0;
 
         [Column("LastUpdated")]
         [NotNull]
-        [Default(usePropertyValue: true)]
+        [Default]
         public DateTime LastUpdated { get; set; } = DateTime.Now;
+
+        [ManyToMany(typeof(ShoppingListProduct), CascadeOperations = CascadeOperation.All)]
+        public List<Product> Products { get; set; }
+
+        #endregion
     }
 }

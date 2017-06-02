@@ -1,20 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using Android.App;
-using Android.Content;
-using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
-
-namespace ShoppingHelper
+﻿namespace ShoppingHelper
 {
+    using Android.App;
+
     public interface INoticeDialogListener
     {
-        void OnDialogPositiveClick(DialogFragment dialog);
+        #region Public Methods and Operators
+
         void OnDialogNegativeClick(DialogFragment dialog);
+
+        void OnDialogPositiveClick(DialogFragment dialog);
+
+        #endregion
     }
 }

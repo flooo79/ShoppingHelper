@@ -1,36 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using Android.App;
-using Android.Content;
-using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
-using Java.Lang;
-using SQLite.Net.Attributes;
-using SQLiteNetExtensions.Attributes;
-
-namespace ShoppingHelper.Model
+﻿namespace ShoppingHelper.Model
 {
+    using System.Collections.Generic;
+
+    using SQLite.Net.Attributes;
+
+    using SQLiteNetExtensions.Attributes;
 
     [Table("Product")]
     public class Product : IdDescriptionModel
     {
+        #region Constructors and Destructors
+
         public Product()
         {
             ShoppingLists = new List<ShoppingList>();
         }
 
-        [ManyToMany(typeof(ShoppingListProduct))]
-        public List<ShoppingList> ShoppingLists { get; set; }
+        #endregion
+
+        #region Public Properties
+
+        [Column("IsSelected")]
+        public bool IsSelected { get; set; } = false;
 
         [Column("OrderId"), NotNull]
         public int OrderId { get; set; }
 
-        [Column("IsSelected")]
-        public bool IsSelected { get; set; } = false;
+        [ManyToMany(typeof(ShoppingListProduct))]
+        public List<ShoppingList> ShoppingLists { get; set; }
+
+        #endregion
     }
 }

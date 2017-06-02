@@ -1,34 +1,53 @@
-﻿using Android.Support.V7.Widget;
-using Android.Views;
-using Android.Widget;
-using ShoppingHelper.Model;
-using SQLite.Net;
-using SQLiteNetExtensions.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace ShoppingHelper
+﻿namespace ShoppingHelper
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    using Android.Support.V7.Widget;
+    using Android.Views;
+    using Android.Widget;
+
+    using ShoppingHelper.Model;
+
     public class ProductSelectionAdapter : RecyclerView.Adapter
     {
-        public event EventHandler<Product> ProductSelected;
-        public event EventHandler<Product> ProductDeselected;
+        #region Fields
 
         private List<Product> _products;
+
+        #endregion
+
+        #region Constructors and Destructors
 
         public ProductSelectionAdapter(List<Product> products)
         {
             _products = products;
         }
 
-        public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
+        #endregion
+
+        #region Public Events
+
+        public event EventHandler<Product> ProductDeselected;
+
+        public event EventHandler<Product> ProductSelected;
+
+        #endregion
+
+        #region Public Properties
+
+        public override int ItemCount
         {
-            View view = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.ProductSelectionRowView, parent, false);
-            ProductSelectionViewHolder viewHolder = new ProductSelectionViewHolder(view);
-            viewHolder.SelectedCheckBox.CheckedChange += OnSelectedCheckBoxCheckedChange;
-            return viewHolder;
+            get
+            {
+                return _products.Count;
+            }
         }
+
+        #endregion
+
+        #region Public Methods and Operators
 
         public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
         {
@@ -41,9 +60,21 @@ namespace ShoppingHelper
             viewHolder.SelectedCheckBox.Checked = _products[position].IsSelected;
 
             viewHolder.SelectedCheckBox.CheckedChange += OnSelectedCheckBoxCheckedChange;
-            
+
             viewHolder.SelectedCheckBox.Tag = _products[position].Id;
         }
+
+        public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
+        {
+            View view = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.ProductSelectionRowView, parent, false);
+            ProductSelectionViewHolder viewHolder = new ProductSelectionViewHolder(view);
+            viewHolder.SelectedCheckBox.CheckedChange += OnSelectedCheckBoxCheckedChange;
+            return viewHolder;
+        }
+
+        #endregion
+
+        #region Methods
 
         private void OnProductDeselected(Product product)
         {
@@ -66,12 +97,11 @@ namespace ShoppingHelper
 
             int productId = (int)checkBox.Tag;
 
-            Product product = _products.First(p => p.Id == productId);            
+            Product product = _products.First(p => p.Id == productId);
 
             if (checkBox.Checked)
             {
                 OnProductSelected(product);
-
             }
             else
             {
@@ -79,9 +109,6 @@ namespace ShoppingHelper
             }
         }
 
-        public override int ItemCount
-        {
-            get { return _products.Count; }
-        }        
+        #endregion
     }
 }
