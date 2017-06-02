@@ -120,9 +120,6 @@ namespace ShoppingHelper
 			// aapt resource value: 0x7f050006
 			public const int ProductRowViewDescriptionTextView = 2131034118;
 			
-			// aapt resource value: 0x7f050014
-			public const int ProductSelectionMenuItem = 2131034132;
-			
 			// aapt resource value: 0x7f050008
 			public const int ProductSelectionRecyclerView = 2131034120;
 			
@@ -164,6 +161,12 @@ namespace ShoppingHelper
 			
 			// aapt resource value: 0x7f050000
 			public const int item_touch_helper_previous_elevation = 2131034112;
+			
+			// aapt resource value: 0x7f050014
+			public const int start_shopping_menu_edit = 2131034132;
+			
+			// aapt resource value: 0x7f050015
+			public const int start_shopping_menu_share = 2131034133;
 			
 			static Id()
 			{
@@ -263,6 +266,9 @@ namespace ShoppingHelper
 			
 			// aapt resource value: 0x7f060006
 			public const int Products = 2131099654;
+			
+			// aapt resource value: 0x7f06000c
+			public const int Share = 2131099660;
 			
 			// aapt resource value: 0x7f060003
 			public const int ShoppingListName = 2131099651;

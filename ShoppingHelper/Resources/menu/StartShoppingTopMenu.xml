@@ -1,8 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
   <item
-       android:id="@+id/ProductSelectionMenuItem"
+       android:id="@+id/start_shopping_menu_edit"
        android:icon="@drawable/ic_mode_edit_white_36dp"
        android:showAsAction="ifRoom"
        android:title="@string/Edit" />
+    <item
+        android:id="@+id/start_shopping_menu_share"
+        android:showAsAction="never"
+        android:title="@string/Share"
+        android:actionProviderClass="android.widget.ShareActionProvider" />
 </menu>

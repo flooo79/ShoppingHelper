@@ -1,6 +1,7 @@
 ﻿namespace ShoppingHelper
 {
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
 
     using Android.App;
@@ -17,6 +18,8 @@
 
     using SQLiteNetExtensionsAsync.Extensions;
 
+    using Environment = System.Environment;
+
     [Activity(Label = "StartShopping")]
     public class StartShoppingActivity : Activity, IItemTouchHelperAdapter
     {
@@ -32,6 +35,8 @@
 
         private RecyclerView _recyclerView;
 
+        private ShareActionProvider _shareActionProvider;
+
         private ShoppingList _shoppingList;
 
         private int _shoppingListId;
@@ -43,6 +48,14 @@
         public override bool OnCreateOptionsMenu(IMenu menu)
         {
             MenuInflater.Inflate(Resource.Menu.StartShoppingTopMenu, menu);
+
+            // Locate MenuItem with ShareActionProvider
+            IMenuItem item = menu.FindItem(Resource.Id.start_shopping_menu_share);
+
+            // Fetch and store ShareActionProvider
+            _shareActionProvider = (ShareActionProvider)item.ActionProvider;
+
+            // Return true to display menu
             return base.OnCreateOptionsMenu(menu);
         }
 
@@ -71,13 +84,30 @@
                 return true;
             }
 
-            if (id == Resource.Id.ProductSelectionMenuItem)
+            if (id == Resource.Id.start_shopping_menu_edit)
             {
                 SelectProducts(_shoppingList.Id);
                 return true;
             }
 
             return base.OnOptionsItemSelected(item);
+        }
+
+        public override bool OnPrepareOptionsMenu(IMenu menu)
+        {
+            if (_shoppingList == null)
+            {
+                return true;
+            }
+
+            Intent intent = new Intent();
+            intent.SetAction(Intent.ActionSend);
+            intent.PutExtra(Intent.ExtraText, string.Join(Environment.NewLine, _products.Select(p => p.Description)));
+            intent.PutExtra(Intent.ExtraSubject, _shoppingList.Description);
+            intent.SetType("text/plain");
+            _shareActionProvider.SetShareIntent(intent);
+
+            return base.OnPrepareOptionsMenu(menu);
         }
 
         #endregion
