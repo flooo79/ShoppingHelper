@@ -25,7 +25,7 @@
             {
                 _noticeDialogListener = (INoticeDialogListener)activity;
             }
-            catch (ClassCastException e)
+            catch (ClassCastException)
             {
                 throw new ClassCastException(activity + " must implement INoticeDialogListener");
             }
@@ -43,12 +43,13 @@
 
             editText.RequestFocus();
             editText.SetTextColor(Android.Graphics.Color.Black);
-            editText.SelectAll();
 
             builder.SetPositiveButton(GetString(Android.Resource.String.Ok), (s, e) => { _noticeDialogListener.OnDialogPositiveClick(this); });
             builder.SetNegativeButton(GetString(Android.Resource.String.Cancel), (s, e) => { _noticeDialogListener.OnDialogNegativeClick(this); });
 
             AlertDialog dialog = builder.Create();
+            dialog.Show();
+            dialog.Window.SetSoftInputMode(SoftInput.StateAlwaysVisible);
             return dialog;
         }
 

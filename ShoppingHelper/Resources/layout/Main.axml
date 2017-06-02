@@ -5,7 +5,7 @@
     android:layout_height="fill_parent">
     <include
         android:id="@+id/ShoppingListTopToolbar"
-        android:layout="@layout/toolbar" />
+        layout="@layout/toolbar" />
     <android.support.v7.widget.RecyclerView
         android:id="@+id/ShoppingListRecyclerView"
         android:scrollbars="vertical"
