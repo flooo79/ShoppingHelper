@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ApplicationName">ShoppingHelper</string>
+    <string name="ShoppingLists">Shopping lists</string>
+    <string name="NewShoppingList">New shopping list</string>
+    <string name="NewProduct">New product</string>
+    <string name="ShoppingListName">Shopping list name</string>
+    <string name="New">New</string>
+    <string name="Edit">Edit</string>
+    <string name="Products">Products</string>
+    <string name="ProductSelection">Product selection</string>
+    <string name="ProductName">Product name</string>
+    <string name="ShoppingListsToolbarSubtitle">Start shopping ot create a new list</string>
+    <string name="StartShoppingToolbarSubtitle">Swipe to remove products from the list</string>
+    <string name="ProductSelectionToolbarSubtitle">Select, check or add products</string>
+</resources>

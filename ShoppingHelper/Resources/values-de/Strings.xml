@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ApplicationName">ShoppingHelper</string>
+    <string name="ShoppingLists">Einkaufslisten</string>
+    <string name="ShoppingListName">Name der Einkaufsliste</string>
+    <string name="NewShoppingList">Neue Einkaufsliste</string>
+    <string name="NewProduct">Neuer Artikel</string>
+    <string name="New">Abbrechen</string>
+    <string name="Edit">Bearbeiten</string>
+    <string name="Products">Artikel</string>
+    <string name="ProductSelection">Artikelauswahl</string>
+    <string name="ProductName">Artikelbezeichnung</string>
+    <string name="ShoppingListsToolbarSubtitle">Einkauf beginnen oder neue Liste erstellen</string>
+    <string name="StartShoppingToolbarSubtitle">Artikel im Einkaufswagen durch Wischen entfernen</string>
+    <string name="ProductSelectionToolbarSubtitle">Artikel auswählen, hinzufügen oder sortieren</string>
+</resources>

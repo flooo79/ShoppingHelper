@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+  <style name="myTheme" parent="@android:style/Theme.Material.Light.DarkActionBar">
+    <item name="android:windowNoTitle">true</item>
+    <item name="android:windowActionBar">false</item>
+    <item name="android:colorPrimary">#5A8622</item>
+    <item name="android:colorAccent">#C7A935</item>
+  </style>
+
+    <style name="ToolbarSubtitleAppearance">
+        <item name="android:textSize">10dp</item>
+    </style>
+</resources>
