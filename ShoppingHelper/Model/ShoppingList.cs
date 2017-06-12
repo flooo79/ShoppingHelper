@@ -14,23 +14,20 @@
 
         public ShoppingList()
         {
-            Products = new List<Product>();
+            Products = new List<ShoppingListProduct>();
         }
 
         #endregion
 
         #region Public Properties
 
-        [Column("Count")]
-        public int Count { get; set; } = 0;
-
         [Column("LastUpdated")]
         [NotNull]
         [Default]
         public DateTime LastUpdated { get; set; } = DateTime.Now;
 
-        [ManyToMany(typeof(ShoppingListProduct), CascadeOperations = CascadeOperation.All)]
-        public List<Product> Products { get; set; }
+        [OneToMany(CascadeOperations = CascadeOperation.All)]
+        public List<ShoppingListProduct> Products { get; set; }
 
         #endregion
     }

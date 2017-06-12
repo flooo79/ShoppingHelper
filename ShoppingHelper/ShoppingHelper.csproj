@@ -87,6 +87,7 @@
     <Compile Include="INoticeDialogListener.cs" />
     <Compile Include="Model\ConnectionHelper.cs" />
     <Compile Include="Model\IdDescriptionModel.cs" />
+    <Compile Include="Model\ProductQuantity.cs" />
     <Compile Include="Model\ShoppingList.cs" />
     <Compile Include="Model\Product.cs" />
     <Compile Include="MainActivity.cs" />
@@ -185,7 +186,9 @@
     </AndroidResource>
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="Resources\layout\ProductSelectionRowView.axml" />
+    <AndroidResource Include="Resources\layout\ProductSelectionRowView.axml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\menu\EditShoppingListTopMenu.xml" />
@@ -213,6 +216,21 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\drawable\" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable-hdpi\ic_sort_by_alpha_white_36dp.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable-mdpi\ic_sort_by_alpha_white_36dp.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable-xhdpi\ic_sort_by_alpha_white_36dp.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable-xxhdpi\ic_sort_by_alpha_white_36dp.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable-xxxhdpi\ic_sort_by_alpha_white_36dp.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

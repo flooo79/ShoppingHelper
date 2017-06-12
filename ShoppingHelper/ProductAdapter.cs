@@ -11,28 +11,22 @@
     {
         #region Fields
 
-        private List<Product> _products;
+        private readonly List<ShoppingListProduct> _shoppingListProducts;
 
         #endregion
 
         #region Constructors and Destructors
 
-        public ProductAdapter(List<Product> products)
+        public ProductAdapter(List<ShoppingListProduct> shoppingListProducts)
         {
-            _products = products;
+            _shoppingListProducts = shoppingListProducts;
         }
 
         #endregion
 
         #region Public Properties
 
-        public override int ItemCount
-        {
-            get
-            {
-                return _products.Count;
-            }
-        }
+        public override int ItemCount => _shoppingListProducts.Count;
 
         #endregion
 
@@ -41,7 +35,15 @@
         public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
         {
             ProductViewHolder viewHolder = holder as ProductViewHolder;
-            viewHolder.ProductNameTextView.Text = _products[position].Description;
+
+            if (viewHolder == null)
+
+            {
+                return;
+            }
+
+            viewHolder.ProductQuantityTextView.Text = _shoppingListProducts[position].Quantity > 1 ? $"{_shoppingListProducts[position].Quantity:0'x}" : null;
+            viewHolder.ProductDescriptionTextView.Text = _shoppingListProducts[position].Product?.Description;
         }
 
         public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)

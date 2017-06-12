@@ -1,5 +1,6 @@
 ﻿namespace ShoppingHelper
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
@@ -25,13 +26,11 @@
     {
         #region Fields
 
-        private RecyclerView.Adapter _adapter;
+        private ProductAdapter _adapter;
 
         private SQLiteAsyncConnection _connection;
 
         private LinearLayoutManager _layoutManager;
-
-        private List<Product> _products;
 
         private RecyclerView _recyclerView;
 
@@ -40,6 +39,8 @@
         private ShoppingList _shoppingList;
 
         private int _shoppingListId;
+
+        private List<ShoppingListProduct> _shoppingListProducts;
 
         #endregion
 
@@ -61,13 +62,26 @@
 
         public void OnItemDismiss(int position)
         {
-            Product product = _products[position];
-            _shoppingList.Products.Remove(product);
-
-            _products.RemoveAt(position);
+            int shoppingListProductiD = _shoppingListProducts[position].Id;
+            _shoppingListProducts.RemoveAt(position);
             _adapter.NotifyItemRemoved(position);
 
-            _connection.UpdateWithChildrenAsync(_shoppingList);
+            ShoppingListProduct shoppingListProduct = _shoppingList.Products.FirstOrDefault(s => s.Id == shoppingListProductiD);
+
+            if (shoppingListProduct == null)
+            {
+                return;
+            }
+
+            _shoppingList.Products.Remove(shoppingListProduct);
+
+            _connection.DeleteAsync<ShoppingListProduct>(shoppingListProduct.Id)
+                .ContinueWith(
+                    t =>
+                    {
+                        _shoppingList.LastUpdated = DateTime.Now;
+                        _connection.UpdateAsync(_shoppingList).Wait();
+                    });
         }
 
         public void OnItemMove(int fromPosition, int toPosition)
@@ -102,7 +116,10 @@
 
             Intent intent = new Intent();
             intent.SetAction(Intent.ActionSend);
-            intent.PutExtra(Intent.ExtraText, string.Join(Environment.NewLine, _products.Select(p => p.Description)));
+
+            string extraText = string.Join(Environment.NewLine, _shoppingList.Products.Select(p => $"{p.Quantity}x {p.Product?.Description ?? string.Empty}"));
+            intent.PutExtra(Intent.ExtraText, extraText);
+
             intent.PutExtra(Intent.ExtraSubject, _shoppingList.Description);
             intent.SetType("text/plain");
             _shareActionProvider.SetShareIntent(intent);
@@ -120,8 +137,6 @@
 
             _shoppingListId = Intent.GetIntExtra("ShoppingListId", 0);
 
-            _products = new List<Product>();
-
             _connection = ((ShoppingHelperApplication)Application).Connection;
 
             SetContentView(Resource.Layout.StartShopping);
@@ -132,10 +147,13 @@
             ActionBar.Subtitle = GetString(Resource.String.StartShoppingToolbarSubtitle);
             ActionBar.SetHomeButtonEnabled(true);
             ActionBar.SetDisplayHomeAsUpEnabled(true);
-            _adapter = new ProductAdapter(_products);
+
+            _shoppingListProducts = new List<ShoppingListProduct>();
+            _adapter = new ProductAdapter(_shoppingListProducts);
 
             _recyclerView = FindViewById<RecyclerView>(Resource.Id.StartShoppingRecyclerView);
             _recyclerView.SetAdapter(_adapter);
+
             _layoutManager = new LinearLayoutManager(this);
             _recyclerView.SetLayoutManager(_layoutManager);
 
@@ -148,21 +166,14 @@
         {
             base.OnStart();
 
-            string sql =
-                "select Product.Id, Product.Description, Product.OrderId, case when ShoppingListProduct.ShoppingListId is null then 0 else 1 end as IsSelected " +
-                "from Product " +
-                "inner join ShoppingListProduct on Product.Id = ShoppingListProduct.ProductId and ShoppingListProduct.ShoppingListId = ? " +
-                "order by Product.OrderId";
-
             _connection
-                .GetAsync<ShoppingList>(_shoppingListId)
+                .GetWithChildrenAsync<ShoppingList>(_shoppingListId, true)
                 .ContinueWith(
                     t1 =>
                     {
                         _shoppingList = t1.Result;
-                        _shoppingList.Products = _connection.QueryAsync<Product>(sql, _shoppingListId).Result;
-                        _products.Clear();
-                        _products.AddRange(_shoppingList.Products);
+                        _shoppingListProducts.Clear();
+                        _shoppingListProducts.AddRange(_shoppingList.Products.OrderBy(p => p.Product.OrderId));
                     })
                 .ContinueWith(
                     t2 =>

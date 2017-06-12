@@ -28,6 +28,11 @@
             return GetType() == model.GetType() && Id == model.Id;
         }
 
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
+
         public override string ToString()
         {
             return $"{Id} - {Description}";

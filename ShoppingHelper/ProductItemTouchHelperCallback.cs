@@ -7,7 +7,7 @@
     {
         #region Fields
 
-        private IItemTouchHelperAdapter _itemTouchHelperAdapter;
+        private readonly IItemTouchHelperAdapter _itemTouchHelperAdapter;
 
         #endregion
 

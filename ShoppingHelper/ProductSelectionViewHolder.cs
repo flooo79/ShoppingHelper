@@ -11,17 +11,23 @@
         public ProductSelectionViewHolder(View itemView)
             : base(itemView)
         {
-            ProductNameTextView = itemView.FindViewById<TextView>(Resource.Id.ProductSelectionRowViewDescriptionTextView);
-            SelectedCheckBox = itemView.FindViewById<CheckBox>(Resource.Id.ProductSelectionRowViewSelectionCheckBox);
+            DescriptionTextView = itemView.FindViewById<TextView>(Resource.Id.product_selection_description_textview);
+            LessButton = itemView.FindViewById<Button>(Resource.Id.product_selection_less_button);
+            QuantityTextView = itemView.FindViewById<TextView>(Resource.Id.product_selection_quantity_textview);
+            MoreButton = itemView.FindViewById<Button>(Resource.Id.product_selection_more_button);
         }
 
         #endregion
 
         #region Public Properties
 
-        public TextView ProductNameTextView { get; private set; }
+        public TextView DescriptionTextView { get; }
 
-        public CheckBox SelectedCheckBox { get; private set; }
+        public Button LessButton { get; }
+
+        public Button MoreButton { get; }
+
+        public TextView QuantityTextView { get; }
 
         #endregion
     }

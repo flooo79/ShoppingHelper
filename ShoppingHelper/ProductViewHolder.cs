@@ -11,14 +11,17 @@
         public ProductViewHolder(View itemView)
             : base(itemView)
         {
-            ProductNameTextView = itemView.FindViewById<TextView>(Resource.Id.ProductRowViewDescriptionTextView);
+            ProductQuantityTextView = itemView.FindViewById<TextView>(Resource.Id.start_shopping_product_quantity_textview);
+            ProductDescriptionTextView = itemView.FindViewById<TextView>(Resource.Id.start_shopping_product_description_textview);
         }
 
         #endregion
 
         #region Public Properties
 
-        public TextView ProductNameTextView { get; private set; }
+        public TextView ProductDescriptionTextView { get; }
+
+        public TextView ProductQuantityTextView { get; }
 
         #endregion
     }

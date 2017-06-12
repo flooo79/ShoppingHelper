@@ -12,4 +12,5 @@
     <string name="StartShoppingToolbarSubtitle">Artikel im Einkaufswagen durch Wischen entfernen</string>
     <string name="ProductSelectionToolbarSubtitle">Artikel auswählen, hinzufügen oder sortieren</string>
     <string name="Share">Teilen</string>
+    <string name="Sort">Sortieren</string>
 </resources>

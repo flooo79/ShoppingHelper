@@ -12,7 +12,7 @@
     {
         #region Fields
 
-        private List<ShoppingList> _shoppingLists;
+        private readonly List<ShoppingList> _shoppingLists;
 
         #endregion
 
@@ -33,13 +33,7 @@
 
         #region Public Properties
 
-        public override int ItemCount
-        {
-            get
-            {
-                return _shoppingLists.Count;
-            }
-        }
+        public override int ItemCount => _shoppingLists.Count;
 
         #endregion
 
@@ -49,8 +43,13 @@
         {
             ShoppingListViewHolder viewHolder = holder as ShoppingListViewHolder;
 
+            if (viewHolder == null)
+            {
+                return;
+            }
+
             viewHolder.ShoppingListName.Text = _shoppingLists[position].Description;
-            viewHolder.ItemCount.Text = string.Format("({0:N0})", _shoppingLists[position].Count);
+            viewHolder.ItemCount.Text = $"({_shoppingLists[position].Products.Count:N0})";
         }
 
         public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)

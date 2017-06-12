@@ -12,4 +12,5 @@
     <string name="StartShoppingToolbarSubtitle">Swipe to remove products from the list</string>
     <string name="ProductSelectionToolbarSubtitle">Select, check or add products</string>
     <string name="Share">Share</string>
+    <string name="Sort">Sort</string>
 </resources>

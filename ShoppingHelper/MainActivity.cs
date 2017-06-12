@@ -1,6 +1,7 @@
 ﻿namespace ShoppingHelper
 {
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
 
     using Android.App;
@@ -51,6 +52,8 @@
             EditText editText = (EditText)dialog.Dialog.CurrentFocus;
             string shoppingListName = string.IsNullOrEmpty(editText.Text) ? "<no name>" : editText.Text;
 
+            dialog.Dismiss();
+
             ShoppingList shoppingList = new ShoppingList { Description = shoppingListName };
             _shoppingLists.Insert(0, shoppingList);
             _adapter.NotifyItemInserted(0);
@@ -58,48 +61,33 @@
 
             _connection
                 .InsertAsync(shoppingList)
-                .ContinueWith(t => SelectProducts(shoppingList.Id), TaskScheduler.FromCurrentSynchronizationContext());
-
-            dialog.Dismiss();
+                .ContinueWith(
+                    t => { SelectProducts(shoppingList.Id); },
+                    TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         public void OnItemDismiss(int position)
         {
             ShoppingList shoppingList = _shoppingLists[position];
+
             _shoppingLists.RemoveAt(position);
+
             _adapter.NotifyItemRemoved(position);
 
-            shoppingList.Products.Clear();
-            _connection.UpdateWithChildrenAsync(shoppingList).ContinueWith(t => _connection.DeleteAsync(shoppingList));
+            _connection.DeleteAsync(shoppingList, recursive: true);
         }
 
         public void OnItemMove(int fromPosition, int toPosition)
         {
-            if (fromPosition < toPosition)
-            {
-                for (int i = fromPosition; i < toPosition; i++)
-                {
-                    ShoppingList tmp = _shoppingLists[i];
-                    _shoppingLists[i] = _shoppingLists[i + 1];
-                    _shoppingLists[i + 1] = tmp;
-                }
-            }
-            else
-            {
-                for (int i = fromPosition; i > toPosition; i--)
-                {
-                    ShoppingList tmp = _shoppingLists[i];
-                    _shoppingLists[i] = _shoppingLists[i - 1];
-                    _shoppingLists[i - 1] = tmp;
-                }
-            }
-
-            _adapter.NotifyItemMoved(fromPosition, toPosition);
         }
 
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
-            new AddShoppingListDialogFragment().Show(FragmentManager, "AddShoppingListDialog");
+            if (item.ItemId == Resource.Id.AddShoppingList)
+            {
+                new AddShoppingListDialogFragment().Show(FragmentManager, "AddShoppingListDialog");
+                return true;
+            }
 
             return base.OnOptionsItemSelected(item);
         }
@@ -134,16 +122,6 @@
             itemTouchHelper.AttachToRecyclerView(_recyclerView);
         }
 
-        protected override void OnPause()
-        {
-            base.OnPause();
-        }
-
-        protected override void OnRestoreInstanceState(Bundle savedInstanceState)
-        {
-            base.OnRestoreInstanceState(savedInstanceState);
-        }
-
         protected override void OnResume()
         {
             base.OnResume();
@@ -151,31 +129,25 @@
             _adapter.ItemClick += OnAdapterItemClick;
         }
 
-        protected override void OnSaveInstanceState(Bundle outState)
-        {
-            base.OnSaveInstanceState(outState);
-        }
-
         protected override void OnStart()
         {
             base.OnStart();
 
-            string sql =
-                "select ShoppingList.Id, ShoppingList.Description, count(ShoppingListProduct.ProductId) as Count " +
-                "from ShoppingList " +
-                "left join ShoppingListProduct on ShoppingList.Id = ShoppingListProduct.ShoppingListId " +
-                "group by ShoppingList.Id, ShoppingList.Description " +
-                "order by ShoppingList.LastUpdated desc";
-
             _connection
-                .QueryAsync<ShoppingList>(sql)
+                .GetAllWithChildrenAsync<ShoppingList>()
                 .ContinueWith(
                     t =>
                     {
                         _shoppingLists.Clear();
-                        _shoppingLists.AddRange(t.Result);
+                        _shoppingLists.AddRange(t.Result.OrderByDescending(s => s.LastUpdated));
                     })
-                .ContinueWith(t => _adapter.NotifyDataSetChanged(), TaskScheduler.FromCurrentSynchronizationContext());
+                .ContinueWith(
+                    t
+                        =>
+                    {
+                        _adapter.NotifyDataSetChanged();
+                    },
+                    TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         protected override void OnStop()

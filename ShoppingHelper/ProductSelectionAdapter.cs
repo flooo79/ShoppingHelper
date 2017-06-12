@@ -12,38 +12,38 @@
 
     public class ProductSelectionAdapter : RecyclerView.Adapter
     {
+        #region Constants
+
+        private const int MaxValue = 9;
+
+        private const int MinValue = 0;
+
+        #endregion
+
         #region Fields
 
-        private List<Product> _products;
+        private readonly List<ProductQuantity> _productQuantities;
 
         #endregion
 
         #region Constructors and Destructors
 
-        public ProductSelectionAdapter(List<Product> products)
+        public ProductSelectionAdapter(List<ProductQuantity> productQuantities)
         {
-            _products = products;
+            _productQuantities = productQuantities;
         }
 
         #endregion
 
         #region Public Events
 
-        public event EventHandler<Product> ProductDeselected;
-
-        public event EventHandler<Product> ProductSelected;
+        public event EventHandler<ProductQuantity> QuantityChanged;
 
         #endregion
 
         #region Public Properties
 
-        public override int ItemCount
-        {
-            get
-            {
-                return _products.Count;
-            }
-        }
+        public override int ItemCount => _productQuantities.Count;
 
         #endregion
 
@@ -53,22 +53,25 @@
         {
             ProductSelectionViewHolder viewHolder = holder as ProductSelectionViewHolder;
 
-            viewHolder.ProductNameTextView.Text = _products[position].Description;
+            if (viewHolder == null)
+            {
+                return;
+            }
 
-            viewHolder.SelectedCheckBox.CheckedChange -= OnSelectedCheckBoxCheckedChange;
-
-            viewHolder.SelectedCheckBox.Checked = _products[position].IsSelected;
-
-            viewHolder.SelectedCheckBox.CheckedChange += OnSelectedCheckBoxCheckedChange;
-
-            viewHolder.SelectedCheckBox.Tag = _products[position].Id;
+            viewHolder.DescriptionTextView.Text = _productQuantities[position].Product.Description;
+            viewHolder.QuantityTextView.Text = _productQuantities[position].Quantity.ToString("0");
+            viewHolder.LessButton.Enabled = _productQuantities[position].Quantity > MinValue;
+            viewHolder.LessButton.Tag = _productQuantities[position].Product.Id;
+            viewHolder.MoreButton.Enabled = _productQuantities[position].Quantity < MaxValue;
+            viewHolder.MoreButton.Tag = _productQuantities[position].Product.Id;
         }
 
         public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
         {
             View view = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.ProductSelectionRowView, parent, false);
             ProductSelectionViewHolder viewHolder = new ProductSelectionViewHolder(view);
-            viewHolder.SelectedCheckBox.CheckedChange += OnSelectedCheckBoxCheckedChange;
+            viewHolder.LessButton.Click += OnLessButtonClick;
+            viewHolder.MoreButton.Click += OnMoreButtonClick;
             return viewHolder;
         }
 
@@ -76,37 +79,46 @@
 
         #region Methods
 
-        private void OnProductDeselected(Product product)
+        private void ChangeProductQuantity(int productId, int diffAmount)
         {
-            ProductDeselected?.Invoke(this, product);
-        }
+            ProductQuantity productQuantity = _productQuantities.FirstOrDefault(p => p.Product.Id == productId);
 
-        private void OnProductSelected(Product product)
-        {
-            ProductSelected?.Invoke(this, product);
-        }
-
-        private void OnSelectedCheckBoxCheckedChange(object sender, CompoundButton.CheckedChangeEventArgs e)
-        {
-            CheckBox checkBox = sender as CheckBox;
-
-            if (checkBox == null)
+            if (productQuantity == null)
             {
                 return;
             }
 
-            int productId = (int)checkBox.Tag;
+            productQuantity.Quantity = productQuantity.Quantity + diffAmount;
 
-            Product product = _products.First(p => p.Id == productId);
+            QuantityChanged?.Invoke(this, productQuantity);
+        }
 
-            if (checkBox.Checked)
+        private void OnLessButtonClick(object sender, EventArgs e)
+        {
+            Button button = sender as Button;
+
+            if (button == null)
             {
-                OnProductSelected(product);
+                return;
             }
-            else
+
+            int productId = (int)button.Tag;
+
+            ChangeProductQuantity(productId, -1);
+        }
+
+        private void OnMoreButtonClick(object sender, EventArgs e)
+        {
+            Button button = sender as Button;
+
+            if (button == null)
             {
-                OnProductDeselected(product);
+                return;
             }
+
+            int productId = (int)button.Tag;
+
+            ChangeProductQuantity(productId, +1);
         }
 
         #endregion

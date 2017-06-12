@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
 
     using Android.App;
@@ -28,7 +29,7 @@
 
         private LinearLayoutManager _layoutManager;
 
-        private List<Product> _products;
+        private List<ProductQuantity> _productQuantities;
 
         private RecyclerView _recyclerView;
 
@@ -62,56 +63,108 @@
             if (product == null)
             {
                 string sql = "select max(OrderId) as OrderId from Product";
-                int orderId = _connection.ExecuteScalarAsync<int>(sql).Result;
 
-                product = new Product { Description = productName, IsSelected = true, OrderId = ++orderId };
-                product.ShoppingLists.Add(_shoppingList);
-                _products.Insert(_products.Count, product);
-                _adapter.NotifyItemInserted(_products.Count);
-                position = _products.Count - 1;
-                _shoppingList.LastUpdated = DateTime.Now;
-
-                _connection
-                    .InsertAsync(product)
+                _connection.ExecuteScalarAsync<int>(sql)
                     .ContinueWith(
-                        t1 => _connection.UpdateWithChildrenAsync(product)
-                            .ContinueWith(t2 => _connection.UpdateAsync(_shoppingList)));
+                        t1 =>
+                        {
+                            int orderId = t1.Result;
+                            product = new Product { Description = productName, OrderId = ++orderId };
+                            _connection.InsertAsync(product).Wait();
+                            return product;
+                        })
+                    .ContinueWith(
+                        t2 =>
+                        {
+                            ProductQuantity productQuantity = new ProductQuantity { Product = t2.Result, Quantity = 1 };
+                            _productQuantities.Add(productQuantity);
+                            position = _productQuantities.Count - 1;
+                            _adapter.NotifyItemInserted(position);
+                            _recyclerView.ScrollToPosition(position);
+                            return productQuantity;
+                        },
+                        TaskScheduler.FromCurrentSynchronizationContext())
+                    .ContinueWith(
+                        t3 =>
+                        {
+                            ProductQuantity productQuantity = t3.Result;
+                            ShoppingListProduct shoppingListProduct = new ShoppingListProduct { ShoppingListId = _shoppingListId, ProductId = productQuantity.Product.Id, Product = productQuantity.Product, Quantity = productQuantity.Quantity };
+                            _connection.InsertWithChildrenAsync(shoppingListProduct, true).Wait();
+                            _shoppingList.Products.Add(shoppingListProduct);
+                            _shoppingList.LastUpdated = DateTime.Now;
+                            _connection.UpdateAsync(_shoppingList).Wait();
+                        });
             }
             else
             {
-                for (int i = 0; i < _products.Count; i++)
+                for (int i = 0; i < _productQuantities.Count; i++)
                 {
-                    if (string.Equals(_products[i].Description, productName, StringComparison.CurrentCultureIgnoreCase))
+                    if (string.Equals(_productQuantities[i].Product.Description, productName, StringComparison.CurrentCultureIgnoreCase))
                     {
                         position = i;
-                        product = _products[i];
-                        product.IsSelected = true;
 
-                        if (!product.ShoppingLists.Contains(_shoppingList))
+                        ProductQuantity productQuantity = _productQuantities[i];
+
+                        if (productQuantity.Quantity == 0)
                         {
-                            product.ShoppingLists.Add(_shoppingList);
+                            productQuantity.Quantity = 1;
                         }
 
                         _adapter.NotifyItemChanged(position);
+                        _recyclerView.ScrollToPosition(position);
 
-                        _shoppingList.LastUpdated = DateTime.Now;
-                        _connection.UpdateWithChildrenAsync(product).ContinueWith(t => _connection.UpdateAsync(_shoppingList));
+                        Task task = new Task(
+                            () =>
+                            {
+                                ShoppingListProduct shoppingListProduct = _shoppingList.Products.FirstOrDefault(p => p.Product.Id == productQuantity.Product.Id);
+
+                                if (shoppingListProduct == null)
+                                {
+                                    shoppingListProduct = new ShoppingListProduct { ShoppingListId = _shoppingListId, ProductId = productQuantity.Product.Id, Product = productQuantity.Product, Quantity = productQuantity.Quantity };
+                                    _connection.InsertWithChildrenAsync(shoppingListProduct, true).Wait();
+                                    _shoppingList.Products.Add(shoppingListProduct);
+                                }
+                                else
+                                {
+                                    shoppingListProduct.Quantity = productQuantity.Quantity;
+                                    _connection.UpdateAsync(shoppingListProduct).Wait();
+                                }
+
+                                _shoppingList.LastUpdated = DateTime.Now;
+                                _connection.UpdateAsync(_shoppingList).Wait();
+                            }
+                        );
+
+                        task.Start();
                         break;
                     }
                 }
             }
-
-            _recyclerView.ScrollToPosition(position);
         }
 
         public void OnItemDismiss(int position)
         {
-            Product product = _products[position];
-            product.ShoppingLists.Clear();
-            _products.RemoveAt(position);
+            ProductQuantity productQuantity = _productQuantities[position];
+            _productQuantities.RemoveAt(position);
             _adapter.NotifyItemRemoved(position);
 
-            _connection.UpdateWithChildrenAsync(product).ContinueWith(t => _connection.DeleteAsync(product));
+            ShoppingListProduct shoppingListProduct = _shoppingList.Products.FirstOrDefault(p => p.ProductId == productQuantity.Product.Id);
+
+            if (shoppingListProduct == null)
+            {
+                return;
+            }
+
+            _shoppingList.Products.Remove(shoppingListProduct);
+
+            _connection
+                .DeleteAsync(shoppingListProduct)
+                .ContinueWith(
+                    t =>
+                    {
+                        _shoppingList.LastUpdated = DateTime.Now;
+                        _connection.UpdateAsync(_shoppingList).Wait();
+                    });
         }
 
         public void OnItemMove(int fromPosition, int toPosition)
@@ -120,34 +173,34 @@
             {
                 for (int i = fromPosition; i < toPosition; i++)
                 {
-                    int fromOrderId = _products[i].OrderId;
-                    int toOrderId = _products[i + 1].OrderId;
+                    int fromOrderId = _productQuantities[i].Product.OrderId;
+                    int toOrderId = _productQuantities[i + 1].Product.OrderId;
 
-                    Product tmp = _products[i];
-                    _products[i] = _products[i + 1];
-                    _products[i + 1] = tmp;
+                    Product tmp = _productQuantities[i].Product;
+                    _productQuantities[i].Product = _productQuantities[i + 1].Product;
+                    _productQuantities[i + 1].Product = tmp;
 
-                    _products[i].OrderId = fromOrderId;
-                    _products[i + 1].OrderId = toOrderId;
+                    _productQuantities[i].Product.OrderId = fromOrderId;
+                    _productQuantities[i + 1].Product.OrderId = toOrderId;
 
-                    _connection.UpdateAllAsync(new[] { _products[i], _products[i + 1] });
+                    _connection.UpdateAllAsync(new[] { _productQuantities[i].Product, _productQuantities[i + 1].Product });
                 }
             }
             else
             {
                 for (int i = fromPosition; i > toPosition; i--)
                 {
-                    int fromOrderId = _products[i].OrderId;
-                    int toOrderId = _products[i - 1].OrderId;
+                    int fromOrderId = _productQuantities[i].Product.OrderId;
+                    int toOrderId = _productQuantities[i - 1].Product.OrderId;
 
-                    Product tmp = _products[i];
-                    _products[i] = _products[i - 1];
-                    _products[i - 1] = tmp;
+                    Product tmp = _productQuantities[i].Product;
+                    _productQuantities[i].Product = _productQuantities[i - 1].Product;
+                    _productQuantities[i - 1].Product = tmp;
 
-                    _products[i].OrderId = fromOrderId;
-                    _products[i - 1].OrderId = toOrderId;
+                    _productQuantities[i].Product.OrderId = fromOrderId;
+                    _productQuantities[i - 1].Product.OrderId = toOrderId;
 
-                    _connection.UpdateAllAsync(new[] { _products[i], _products[i - 1] });
+                    _connection.UpdateAllAsync(new[] { _productQuantities[i].Product, _productQuantities[i - 1].Product });
                 }
             }
 
@@ -156,17 +209,21 @@
 
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
-            int id = item.ItemId;
-
-            if (id == Android.Resource.Id.Home)
+            if (item.ItemId == Android.Resource.Id.Home)
             {
                 Finish();
                 return true;
             }
 
-            if (id == Resource.Id.AddProductMenuItem)
+            if (item.ItemId == Resource.Id.AddProductMenuItem)
             {
                 new AddProductDialogFragment().Show(FragmentManager, "AddProductDialog");
+                return true;
+            }
+
+            if (item.ItemId == Resource.Id.SortByNameMenuItem)
+            {
+                SortByName();
                 return true;
             }
 
@@ -183,8 +240,6 @@
 
             _shoppingListId = Intent.GetIntExtra("ShoppingListId", 0);
 
-            _products = new List<Product>();
-
             _connection = ((ShoppingHelperApplication)Application).Connection;
 
             SetContentView(Resource.Layout.ProductSelection);
@@ -196,14 +251,15 @@
             ActionBar.SetHomeButtonEnabled(true);
             ActionBar.SetDisplayHomeAsUpEnabled(true);
 
-            _adapter = new ProductSelectionAdapter(_products);
-            _adapter.ProductSelected += OnAdapterProductSelected;
-            _adapter.ProductDeselected += OnAdapterProductDeselected;
-
             _recyclerView = FindViewById<RecyclerView>(Resource.Id.ProductSelectionRecyclerView);
-            _recyclerView.SetAdapter(_adapter);
             _layoutManager = new LinearLayoutManager(this);
             _recyclerView.SetLayoutManager(_layoutManager);
+
+            _productQuantities = new List<ProductQuantity>();
+
+            _adapter = new ProductSelectionAdapter(_productQuantities);
+            _adapter.QuantityChanged += OnProductQuantityChanged;
+            _recyclerView.SetAdapter(_adapter);
 
             ItemTouchHelper.Callback itemTouchHelperCallback = new ProductSelectionItemTouchHelperCallback(this);
             ItemTouchHelper itemTouchHelper = new ItemTouchHelper(itemTouchHelperCallback);
@@ -214,46 +270,88 @@
         {
             base.OnStart();
 
-            _connection
-                .QueryAsync<Product>(
-                    "select Product.Id, Product.Description, Product.OrderId, case when ShoppingListProduct.ShoppingListId is null then 0 else 1 end as IsSelected " +
-                    "from Product " +
-                    "left join ShoppingListProduct on Product.Id = ShoppingListProduct.ProductId and ShoppingListProduct.ShoppingListId = ? " +
-                    "order by Product.OrderId",
-                    _shoppingListId)
-                .ContinueWith(
-                    r =>
-                    {
-                        _products.Clear();
-                        _products.AddRange(r.Result);
-                    })
-                .ContinueWith(r => _adapter.NotifyDataSetChanged(), TaskScheduler.FromCurrentSynchronizationContext())
-                .ContinueWith(r => { _shoppingList = _connection.GetWithChildrenAsync<ShoppingList>(_shoppingListId).Result; });
+            LoadData();
         }
 
-        private void OnAdapterProductDeselected(object sender, Product product)
+        private void LoadData()
         {
-            product.ShoppingLists.Remove(_shoppingList);
+            Task task1 =
+                _connection.GetWithChildrenAsync<ShoppingList>(_shoppingListId, recursive: true)
+                    .ContinueWith(
+                        t1 => { _shoppingList = t1.Result; });
 
-            _shoppingList.Products.Remove(product);
-            _shoppingList.LastUpdated = DateTime.Now;
+            Task task2 =
+                _connection.Table<Product>().OrderBy(p => p.OrderId).ToListAsync()
+                    .ContinueWith(
+                        t2 =>
+                        {
+                            _productQuantities.Clear();
+                            t2.Result.ForEach(p => _productQuantities.Add(new ProductQuantity { Product = p, Quantity = 0 }));
+                        });
 
-            _connection.UpdateWithChildrenAsync(product);
-            _connection.UpdateAsync(_shoppingList);
-        }
+            Task.WaitAll(task1, task2);
 
-        private void OnAdapterProductSelected(object sender, Product product)
-        {
-            product.ShoppingLists.Add(_shoppingList);
-
-            if (!_shoppingList.Products.Contains(product))
+            foreach (ShoppingListProduct shoppingListProduct in _shoppingList.Products)
             {
-                _shoppingList.Products.Add(product);
+                ProductQuantity productQuantity = _productQuantities.FirstOrDefault(p => p.Product.Equals(shoppingListProduct.Product));
+
+                if (productQuantity != null)
+                {
+                    productQuantity.Quantity = shoppingListProduct.Quantity;
+                }
             }
 
-            _shoppingList.LastUpdated = DateTime.Now;
+            _adapter.NotifyDataSetChanged();
+        }
 
-            _connection.UpdateWithChildrenAsync(_shoppingList);
+        private void OnProductQuantityChanged(object sender, ProductQuantity productQuantity)
+        {
+            if (productQuantity?.Product == null)
+            {
+                return;
+            }
+
+            Task task;
+
+            ShoppingListProduct shoppingListProduct = _shoppingList.Products.FirstOrDefault(p => p.ProductId == productQuantity.Product.Id);
+
+            if (shoppingListProduct == null)
+            {
+                shoppingListProduct = new ShoppingListProduct { ShoppingListId = _shoppingListId, ProductId = productQuantity.Product.Id, Product = productQuantity.Product, Quantity = productQuantity.Quantity };
+                task = _connection.InsertWithChildrenAsync(shoppingListProduct, true).ContinueWith(t => _shoppingList.Products.Add(shoppingListProduct));
+            }
+            else
+            {
+                shoppingListProduct.Quantity = productQuantity.Quantity;
+                task = _connection.UpdateAsync(shoppingListProduct);
+            }
+
+            int index = _productQuantities.IndexOf(productQuantity);
+
+            _adapter.NotifyItemChanged(index);
+
+            task.ContinueWith(
+                t =>
+                {
+                    _shoppingList.LastUpdated = DateTime.Now;
+                    _connection.UpdateAsync(_shoppingList);
+                });
+        }
+
+        private void SortByName()
+        {
+            Task task = _connection.Table<Product>().OrderBy(p => p.Description).ToListAsync()
+                .ContinueWith(
+                    t1 =>
+                    {
+                        int orderId = 0;
+                        t1.Result.ForEach(p => p.OrderId = ++orderId);
+                        _connection.UpdateAllAsync(t1.Result).Wait();
+                    });
+
+            Task.WaitAll(task);
+
+            LoadData();
         }
 
         #endregion

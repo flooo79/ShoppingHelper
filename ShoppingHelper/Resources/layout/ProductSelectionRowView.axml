@@ -3,16 +3,36 @@
     android:id="@+id/ProductSelectionRowView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
-    <TextView
-        android:id="@+id/ProductSelectionRowViewDescriptionTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="20dip"
-        android:padding="10dip" />
-    <CheckBox
-        android:id="@+id/ProductSelectionRowViewSelectionCheckBox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <Button
+        android:id="@+id/product_selection_more_button"
         android:layout_alignParentRight="true"
-        android:layout_centerVertical="true" />
+        android:layout_centerVertical="true"
+        android:layout_height="wrap_content"
+        android:layout_width="50dp"
+        android:padding="10dip"
+        android:text="+" />
+    <TextView
+        android:id="@+id/product_selection_quantity_textview"
+        android:layout_toLeftOf="@id/product_selection_more_button"
+        android:layout_centerVertical="true"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:padding="10dip"
+        android:textSize="20dip" />
+    <Button
+        android:id="@+id/product_selection_less_button"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@id/product_selection_quantity_textview"
+        android:layout_height="wrap_content"
+        android:layout_width="50dp"
+        android:padding="10dip"
+        android:text="-" />
+    <TextView
+        android:id="@+id/product_selection_description_textview"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@id/product_selection_less_button"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:padding="10dip"
+        android:textSize="20dip" />
 </RelativeLayout>
