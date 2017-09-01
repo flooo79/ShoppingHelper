@@ -157,14 +157,23 @@
 
             _shoppingList.Products.Remove(shoppingListProduct);
 
+            Product product = shoppingListProduct.Product;
+
             _connection
                 .DeleteAsync(shoppingListProduct)
                 .ContinueWith(
-                    t =>
+                    t1 =>
+                    {
+                        _connection.DeleteAsync(product).Wait();
+                    }
+                    , TaskContinuationOptions.ExecuteSynchronously)
+                    .ContinueWith(
+                    t2 =>
                     {
                         _shoppingList.LastUpdated = DateTime.Now;
                         _connection.UpdateAsync(_shoppingList).Wait();
-                    });
+                    }
+                    , TaskContinuationOptions.ExecuteSynchronously);
         }
 
         public void OnItemMove(int fromPosition, int toPosition)

@@ -13,5 +13,10 @@
         public int OrderId { get; set; }
 
         #endregion
+
+        public override string ToString()
+        {
+            return $"{Id} - {Description}";
+        }
     }
 }

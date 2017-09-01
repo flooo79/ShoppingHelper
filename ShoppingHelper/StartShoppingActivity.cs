@@ -173,7 +173,7 @@
                     {
                         _shoppingList = t1.Result;
                         _shoppingListProducts.Clear();
-                        _shoppingListProducts.AddRange(_shoppingList.Products.OrderBy(p => p.Product.OrderId));
+                        _shoppingListProducts.AddRange(_shoppingList.Products.Where(p => p.Product != null).OrderBy(p => p.Product.OrderId));
                     })
                 .ContinueWith(
                     t2 =>

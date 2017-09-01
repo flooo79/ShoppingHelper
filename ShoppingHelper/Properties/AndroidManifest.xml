@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="ShoppingHelper.ShoppingHelper" android:versionCode="5" android:versionName="1.0.4" android:installLocation="auto">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="ShoppingHelper.ShoppingHelper" android:versionCode="6" android:versionName="1.0.5" android:installLocation="auto">
 	<uses-sdk android:minSdkVersion="22" />
 	<application android:icon="@drawable/ic_local_grocery_store_white_36dp" android:label="ShoppingHelper" />
 </manifest>
