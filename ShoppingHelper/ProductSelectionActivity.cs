@@ -150,30 +150,16 @@
 
             ShoppingListProduct shoppingListProduct = _shoppingList.Products.FirstOrDefault(p => p.ProductId == productQuantity.Product.Id);
 
-            if (shoppingListProduct == null)
+            if (shoppingListProduct != null)
             {
-                return;
+                _shoppingList.Products.Remove(shoppingListProduct);
+                Task task1 = _connection.DeleteAsync(shoppingListProduct);
+                _shoppingList.LastUpdated = DateTime.Now;
+                Task task2 = _connection.UpdateAsync(_shoppingList);
+                Task.WaitAll(task1, task2);
             }
 
-            _shoppingList.Products.Remove(shoppingListProduct);
-
-            Product product = shoppingListProduct.Product;
-
-            _connection
-                .DeleteAsync(shoppingListProduct)
-                .ContinueWith(
-                    t1 =>
-                    {
-                        _connection.DeleteAsync(product).Wait();
-                    }
-                    , TaskContinuationOptions.ExecuteSynchronously)
-                    .ContinueWith(
-                    t2 =>
-                    {
-                        _shoppingList.LastUpdated = DateTime.Now;
-                        _connection.UpdateAsync(_shoppingList).Wait();
-                    }
-                    , TaskContinuationOptions.ExecuteSynchronously);
+            _connection.DeleteAsync(productQuantity.Product);
         }
 
         public void OnItemMove(int fromPosition, int toPosition)
